@@ -25,6 +25,8 @@ function realismAddon_gearbox_spec_cvt.registerEventListeners(vehicleType)
 	SpecializationUtil.registerEventListener(vehicleType, "onUpdate", realismAddon_gearbox_spec_cvt)
  	SpecializationUtil.registerEventListener(vehicleType, "onWriteUpdateStream", realismAddon_gearbox_spec_cvt)
  	SpecializationUtil.registerEventListener(vehicleType, "onReadUpdateStream", realismAddon_gearbox_spec_cvt)      
+ 	SpecializationUtil.registerEventListener(vehicleType, "onReadStream", realismAddon_gearbox_spec_cvt)
+ 	SpecializationUtil.registerEventListener(vehicleType, "onWriteStream", realismAddon_gearbox_spec_cvt)
 end
 
 function realismAddon_gearbox_spec_cvt.registerFunctions(vehicleType)
@@ -87,7 +89,7 @@ function realismAddon_gearbox_spec_cvt:onLoad(savegame)
 	end   
 end
 
-function realismAddon_gearbox_spec_clutch:onReadStream(streamId, connection)
+function realismAddon_gearbox_spec_cvt:onReadStream(streamId, connection)
     local spec = self.spec_realismAddon_gearbox
     if spec.cvt ~= nil then
         spec.cvt.cvtPercent = streamReadIntN(streamId, 8) * 0.01
@@ -102,7 +104,7 @@ function realismAddon_gearbox_spec_clutch:onReadStream(streamId, connection)
         end
     end    
 end
-function realismAddon_gearbox_spec_clutch:onWriteStream(streamId, connection)
+function realismAddon_gearbox_spec_cvt:onWriteStream(streamId, connection)
     local spec = self.spec_realismAddon_gearbox
     if spec.cvt ~= nil then
         streamWriteIntN(streamId, spec.cvt.cvtPercent * 100, 8)
