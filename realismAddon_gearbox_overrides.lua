@@ -456,6 +456,41 @@ function realismAddon_gearbox_overrides.update(self, superFunc, dt)
 				clampedMotorRpm = (self.lastRealMotorRpm * 0.7) + (clutchRpm * 0.3)
 			end		
 			
+			-- Big-H: engine stalling, only for vehicles on shift policy 2 or 3 and only on the server (clients get the motor stop via event)
+			local bighSpec = vehicle.spec_realismAddon_gearbox_bigh
+			local bighAllowStall = bighSpec ~= nil and (bighSpec.shiftPolicy == realismAddon_gearbox_spec_bigh.POLICY_MANUAL or bighSpec.shiftPolicy == realismAddon_gearbox_spec_bigh.POLICY_MANUAL_CLUTCH)
+			local bighStalled = false
+			if bighAllowStall and vehicle.isServer and vehicle:getIsMotorStarted() then
+				-- grace period: motor must be fully started (MotorState.ON) for a moment, otherwise starting the engine in gear stalls it right away
+				local motorFullyRunning = vehicle.getMotorState == nil or MotorState == nil or vehicle:getMotorState() == MotorState.ON
+				if motorFullyRunning then
+					self.bighRunningTime = (self.bighRunningTime or 0) + dt
+				else
+					self.bighRunningTime = 0
+				end
+
+				if (self.bighRunningTime or 0) > 1500 then
+					local speedKmh = vehicle:getLastSpeed() -- already km/h
+					local throttle = self.lastAcceleratorPedal or 0
+					-- stopped in gear with the clutch closed -> stall
+					if clutchRpm <= 0.1 and speedKmh < 0.5 then
+						bighStalled = true
+					-- dragged far below idle while the driver asks for power -> stall
+					elseif clutchRpm > 0.1 and clutchRpm < (self.minRpm * 0.6) and throttle > 0.2 then
+						bighStalled = true
+					end
+
+					if bighStalled then
+						vehicle:stopMotor()
+						clampedMotorRpm = self.minRpm
+						self.lastRealMotorRpm = self.minRpm
+						self.bighRunningTime = 0
+					end
+				end
+			else
+				self.bighRunningTime = 0
+			end
+
 			-- this doesn't work like that in FS22, so disable for now. Set clampedMotorRpm to minRpm if vehicle is stopped anyways ß
 			if clutchRpm <= 0 and vehicle.isServer then -- check if we're server 
 				--vehicle:stopMotor()
