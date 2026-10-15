@@ -149,7 +149,10 @@ function realismAddon_gearbox_spec_clutch:onUpdate(dt)
         local motor = self.spec_motorized.motor       
 
 		-- check if transmission is manual 
-		if realismAddon_gearbox_overrides.checkIsManual(motor) then
+		-- the clutch automation (keyboard clutch, fluid clutch) only runs on the server. Clients receive the resulting
+		-- clutch value through the basegame clutch synchronization (Motorized -> motor:getClutchPedal()), running it
+		-- on the client as well would stack a second automation on top of the already automated value.
+		if self.isServer and realismAddon_gearbox_overrides.checkIsManual(motor) then
 
             -- Keyboard Clutch Calculations 
             if spec.keyboardClutch ~= nil and (spec.keyboardClutch_enableAutoOpen == true or spec.keyboardClutch_enableAutoMovement == true) then 
