@@ -322,10 +322,11 @@ end
 function realismAddon_gearbox_inputs:onWriteUpdateStream(streamId, connection, dirtyMask)
 	local spec = self.spec_realismAddon_gearbox_inputs
 
-	if connection:getIsServer() and spec.allManualActive then 
+	if connection:getIsServer() then 
 		-- hand throttle
-		if streamWriteBool(streamId, bitAND(dirtyMask, spec.synchHandThrottleDirtyFlag) ~= 0) then
-			streamWriteUIntN(streamId, spec.handThrottlePercent * 100, 7)
+		-- always write the bool, the reading side must not depend on its own allManualActive state (can differ from ours for a moment)
+		if streamWriteBool(streamId, spec.allManualActive and bitAND(dirtyMask, spec.synchHandThrottleDirtyFlag) ~= 0) then
+			streamWriteUIntN(streamId, math.floor(spec.handThrottlePercent * 100 + 0.5), 7)
 		end				
 	end
 	
@@ -334,7 +335,7 @@ end
 function realismAddon_gearbox_inputs:onReadUpdateStream(streamId, timestamp, connection)
 	local spec = self.spec_realismAddon_gearbox_inputs
 	
-	if not connection:getIsServer() and spec.allManualActive then 
+	if not connection:getIsServer() then 
 		-- hand throttle
 		if streamReadBool(streamId) then
 			spec.handThrottlePercent = streamReadUIntN(streamId, 7) / 100
