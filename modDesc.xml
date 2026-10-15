@@ -1,17 +1,38 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="105">
-    <author>modelleicher</author>
+    <author>modelleicher, Big-H</author>
     <version>0.9.3.4</version>
     <title>
-        <de>RealismAddon: Gearbox</de>
-		<en>RealismAddon: Gearbox</en>
+        <de>RealismAddon: Gearbox (Big-H Edition)</de>
+		<en>RealismAddon: Gearbox (Big-H Edition)</en>
     </title>
     <description>
         <de>
-<![CDATA[RealismAddon: Gearbox]]>
+<![CDATA[RealismAddon: Gearbox (Big-H Edition)
+
+Basiert auf RealismAddon Gearbox 0.9.3.4 von modelleicher.
+
+Big-H Edition, zusätzlich:
+- Getriebeprofil pro Fahrzeug: Numpad 0 Spielereinstellung, Numpad 1 Automatik, Numpad 2 Manuell ohne Kupplung, Numpad 3 Manuell mit Kupplung, Numpad 4 weiterschalten. Wird im Spielstand gespeichert und im Multiplayer synchronisiert.
+- Bei Profil 2 ist die RealismAddon-Physik auch im Modus "Manuell" aktiv.
+- Bei Profil 2 und 3 stirbt der Motor ab, wenn man im Gang mit geschlossener Kupplung stehen bleibt oder ihn unter Last weit unter Leerlauf drückt. Mit der Option "Kupplung automatisch öffnen" aus dem Mod-Menü lässt sich das vermeiden.
+- Multiplayer-Fehlerbehebungen für Dedicated Server (Netzwerk-Streams, Kupplungsautomatik nur auf dem Server, Übertragung der Fahrzeugeinstellungen beim Beitritt).
+- Getriebeanpassungen aus xmlEdits.xml greifen jetzt auch bei Steam-Installationen und Windows-Servern.
+
+Alle weiteren Funktionen siehe englische Beschreibung.]]>
         </de>
 	<en>
-<![CDATA[RealismAddon Gearbox for FS25
+<![CDATA[RealismAddon Gearbox for FS25 (Big-H Edition)
+
+Based on RealismAddon Gearbox 0.9.3.4 by modelleicher.
+
+Big-H Edition additions:
+- transmission profile per vehicle: Numpad 0 player setting, Numpad 1 automatic, Numpad 2 manual without clutch, Numpad 3 manual with clutch, Numpad 4 cycle. Saved in the savegame and synchronized in multiplayer.
+- with profile 2 the RealismAddon physics are active in "manual" mode as well.
+- with profile 2 and 3 the engine stalls when stopped in gear with the clutch closed or when lugged far below idle under load. The "auto open clutch" option from the mod menu avoids that.
+- multiplayer fixes for dedicated servers (network streams, clutch automation on server only, vehicle settings sent on join).
+- transmission edits from xmlEdits.xml now also apply on Steam installations and Windows servers.
+
 
 The goal with this mod is to fix all the large and little problems realism players have with the default Farm Sim transmissions.
 
