@@ -17,6 +17,15 @@ function realismAddon_gearbox_inputs.onRegisterActionEvents(self, isActiveForInp
 	if self.isClient then
 		local specInputs = self.spec_realismAddon_gearbox_inputs
 		local spec = self.spec_realismAddon_gearbox
+
+		-- Big-H: shift policy per vehicle, available in every mode
+		if (isActiveForInputIgnoreSelection or isActiveForInput) and self.bighSetShiftPolicy ~= nil then
+			self:addRealismAddonActionEvent("BUTTON_SINGLE_ACTION", "RAGB_BIGH_POLICY_NEXT", "BIGH_POLICY_INPUT", true)
+			self:addRealismAddonActionEvent("BUTTON_SINGLE_ACTION", "RAGB_BIGH_POLICY_PLAYER", "BIGH_POLICY_INPUT")
+			self:addRealismAddonActionEvent("BUTTON_SINGLE_ACTION", "RAGB_BIGH_POLICY_AUTO", "BIGH_POLICY_INPUT")
+			self:addRealismAddonActionEvent("BUTTON_SINGLE_ACTION", "RAGB_BIGH_POLICY_MANUAL", "BIGH_POLICY_INPUT")
+			self:addRealismAddonActionEvent("BUTTON_SINGLE_ACTION", "RAGB_BIGH_POLICY_MANUALCLUTCH", "BIGH_POLICY_INPUT")
+		end
 		
 		if (isActiveForInputIgnoreSelection or isActiveForInput) and specInputs.allManualActive then
 		
@@ -371,6 +380,30 @@ function realismAddon_gearbox_inputs.MotorGearShiftEvent_writeStream(self, super
 	end
 end
 MotorGearShiftEvent.writeStream = Utils.overwrittenFunction(MotorGearShiftEvent.writeStream, realismAddon_gearbox_inputs.MotorGearShiftEvent_writeStream)
+
+
+-- Big-H: shift policy per vehicle
+function realismAddon_gearbox_inputs:BIGH_POLICY_INPUT(actionName, inputValue)
+	if self.bighSetShiftPolicy == nil then
+		return
+	end
+
+	if actionName == "RAGB_BIGH_POLICY_NEXT" then
+		local nxt = self:bighGetShiftPolicy() + 1
+		if nxt > realismAddon_gearbox_spec_bigh.POLICY_MAX then
+			nxt = realismAddon_gearbox_spec_bigh.POLICY_PLAYER
+		end
+		self:bighSetShiftPolicy(nxt)
+	elseif actionName == "RAGB_BIGH_POLICY_PLAYER" then
+		self:bighSetShiftPolicy(realismAddon_gearbox_spec_bigh.POLICY_PLAYER)
+	elseif actionName == "RAGB_BIGH_POLICY_AUTO" then
+		self:bighSetShiftPolicy(realismAddon_gearbox_spec_bigh.POLICY_AUTO)
+	elseif actionName == "RAGB_BIGH_POLICY_MANUAL" then
+		self:bighSetShiftPolicy(realismAddon_gearbox_spec_bigh.POLICY_MANUAL)
+	elseif actionName == "RAGB_BIGH_POLICY_MANUALCLUTCH" then
+		self:bighSetShiftPolicy(realismAddon_gearbox_spec_bigh.POLICY_MANUAL_CLUTCH)
+	end
+end
 
 
 

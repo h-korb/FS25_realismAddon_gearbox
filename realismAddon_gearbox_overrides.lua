@@ -69,9 +69,16 @@ function realismAddon_gearbox_overrides.checkIsManual(motor)
 
 	if isManualTransmission and localSettingManualClutch then
 		return true
-	else
-		return false
 	end
+
+	-- Big-H: "manual without clutch" is active for this mod only if the vehicle is explicitly set to shift policy 2
+	if isManualTransmission and localSettingManual and motor.vehicle ~= nil and motor.vehicle.spec_realismAddon_gearbox_bigh ~= nil then
+		if motor.vehicle.spec_realismAddon_gearbox_bigh.shiftPolicy == realismAddon_gearbox_spec_bigh.POLICY_MANUAL then
+			return true
+		end
+	end
+
+	return false
 
 
 end

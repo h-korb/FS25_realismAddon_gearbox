@@ -11,6 +11,8 @@ g_specializationManager:addSpecialization("realismAddon_gearbox_spec_clutch", "r
 g_specializationManager:addSpecialization("realismAddon_gearbox_spec_cvt", "realismAddon_gearbox_spec_cvt", g_currentModDirectory.."realismAddon_gearbox_spec_cvt.lua")
 -- realismAddon_gearbox_inputs contains only Inputs and Functions that are called via the Input Callback
 g_specializationManager:addSpecialization("realismAddon_gearbox_inputs", "realismAddon_gearbox_inputs", g_currentModDirectory.."realismAddon_gearbox_inputs.lua")
+-- Big-H: realismAddon_gearbox_spec_bigh contains the per vehicle shift policy
+g_specializationManager:addSpecialization("realismAddon_gearbox_spec_bigh", "realismAddon_gearbox_spec_bigh", g_currentModDirectory.."realismAddon_gearbox_spec_bigh.lua")
 
 
 -- everything else is in realismAddon_gearbox_overrides
@@ -29,6 +31,7 @@ function realismAddon_gearbox_register:register(name)
 			
 			local motorized = false
 			local realismAddon_gearbox_inputs = false
+			local realismAddon_gearbox_spec_bigh = false -- Big-H
 			local realismAddon_gearbox_spec = false
 			local realismAddon_gearbox_spec_clutch = false
 			local realismAddon_gearbox_spec_cvt = false			
@@ -46,6 +49,9 @@ function realismAddon_gearbox_register:register(name)
 				--end						
 				if spec == "realismAddon_gearbox_inputs" then -- don't insert if already inserted
 					realismAddon_gearbox_inputs = true
+				end
+				if spec == "realismAddon_gearbox_spec_bigh" then -- Big-H
+					realismAddon_gearbox_spec_bigh = true
 				end
 				if spec == "realismAddon_gearbox_spec" then -- don't insert if already inserted
 					realismAddon_gearbox_spec = true
@@ -74,6 +80,9 @@ function realismAddon_gearbox_register:register(name)
 				if not realismAddon_gearbox_inputs then				
 					g_vehicleTypeManager:addSpecialization(vehicle.name, "FS25_realismAddon_gearbox.realismAddon_gearbox_inputs")
 				end			
+				if not realismAddon_gearbox_spec_bigh then -- Big-H
+					g_vehicleTypeManager:addSpecialization(vehicle.name, "FS25_realismAddon_gearbox.realismAddon_gearbox_spec_bigh")
+				end
 			end
 		end
 		

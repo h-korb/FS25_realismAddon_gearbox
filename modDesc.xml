@@ -157,6 +157,8 @@ V 0.5.1.0
         <sourceFile filename="realismAddon_gearbox_overrides.lua"/>
 		
         <sourceFile filename="realismAddon_gearbox_register.lua"/>
+        <!-- Big-H: shift policy per vehicle -->
+        <sourceFile filename="realismAddon_gearbox_bighShiftPolicyEvent.lua"/>
 		
     </extraSourceFiles>
 	
@@ -188,6 +190,17 @@ V 0.5.1.0
 		<text name="input_RAGB_VARIO_NEUTRAL_BUTTON"><de>CVT Neutral Button</de><en>CVT Neutral Button</en></text>	
 
 		<text name="input_RAGB_GUI_OPEN"><de>GUI öffnen</de><en>GUI open</en></text>
+
+		<!-- Big-H: shift policy per vehicle -->
+		<text name="input_RAGB_BIGH_POLICY_NEXT"><de>Getriebeprofil: weiterschalten</de><en>Transmission profile: cycle</en></text>
+		<text name="input_RAGB_BIGH_POLICY_PLAYER"><de>Getriebeprofil: Spielereinstellung</de><en>Transmission profile: player setting</en></text>
+		<text name="input_RAGB_BIGH_POLICY_AUTO"><de>Getriebeprofil: Automatik</de><en>Transmission profile: automatic</en></text>
+		<text name="input_RAGB_BIGH_POLICY_MANUAL"><de>Getriebeprofil: Manuell ohne Kupplung</de><en>Transmission profile: manual without clutch</en></text>
+		<text name="input_RAGB_BIGH_POLICY_MANUALCLUTCH"><de>Getriebeprofil: Manuell mit Kupplung</de><en>Transmission profile: manual with clutch</en></text>
+		<text name="RAGB_BIGH_POLICY_0"><de>Getriebeprofil: Spielereinstellung</de><en>Transmission profile: player setting</en></text>
+		<text name="RAGB_BIGH_POLICY_1"><de>Getriebeprofil: Automatik</de><en>Transmission profile: automatic</en></text>
+		<text name="RAGB_BIGH_POLICY_2"><de>Getriebeprofil: Manuell ohne Kupplung</de><en>Transmission profile: manual without clutch</en></text>
+		<text name="RAGB_BIGH_POLICY_3"><de>Getriebeprofil: Manuell mit Kupplung</de><en>Transmission profile: manual with clutch</en></text>
 	</l10n>
 	
 	<inputBinding>
@@ -258,6 +271,23 @@ V 0.5.1.0
 		<actionBinding action="RAGB_GUI_OPEN">
 			<binding device="KB_MOUSE_DEFAULT" input="" />
 		</actionBinding>			
+
+		<!-- Big-H: shift policy per vehicle -->
+		<actionBinding action="RAGB_BIGH_POLICY_NEXT">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_KP_4" />
+		</actionBinding>
+		<actionBinding action="RAGB_BIGH_POLICY_PLAYER">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_KP_0" />
+		</actionBinding>
+		<actionBinding action="RAGB_BIGH_POLICY_AUTO">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_KP_1" />
+		</actionBinding>
+		<actionBinding action="RAGB_BIGH_POLICY_MANUAL">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_KP_2" />
+		</actionBinding>
+		<actionBinding action="RAGB_BIGH_POLICY_MANUALCLUTCH">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_KP_3" />
+		</actionBinding>
 	</inputBinding>
 	
 	<actions>
@@ -290,6 +320,13 @@ V 0.5.1.0
 		<action name="RAGB_SHIFT_GROUP_8" />	
 
 		<action name="RAGB_GUI_OPEN" />				
+
+		<!-- Big-H: shift policy per vehicle -->
+		<action name="RAGB_BIGH_POLICY_NEXT" />
+		<action name="RAGB_BIGH_POLICY_PLAYER" />
+		<action name="RAGB_BIGH_POLICY_AUTO" />
+		<action name="RAGB_BIGH_POLICY_MANUAL" />
+		<action name="RAGB_BIGH_POLICY_MANUALCLUTCH" />
 	</actions>	
 	
 </modDesc>
