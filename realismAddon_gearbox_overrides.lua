@@ -195,7 +195,9 @@ function realismAddon_gearbox_overrides.getClutchPedal(self, superFunc)
 	
 	
 	local spec = self.vehicle.spec_realismAddon_gearbox
-	if realismAddon_gearbox_overrides.checkIsManual(self) and spec ~= nil then
+	-- only the server applies the clutch overrides. Clients get the resulting value from the server via the basegame
+	-- clutch synchronization and must not add their own override on top of it again (superFunc returns manualClutchValue on clients)
+	if self.vehicle.isServer and realismAddon_gearbox_overrides.checkIsManual(self) and spec ~= nil then
 		
 		--print("manualClutchValue1: "..tostring(self.manualClutchValue))
 
