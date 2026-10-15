@@ -616,10 +616,10 @@ function realismAddon_gearbox_overrides.update(self, superFunc, dt)
 		
 
 		-- BLOW OF VALVE - DOES NOT WORK - TO DO
+		local accInput = 0
 		if vehicle:getIsMotorStarted() then
 		
 			-- turbo calculation for blow-off and turbo sound 		ß
-			local accInput = 0
 			if vehicle.getAxisForward ~= nil then
 				accInput = math.max(0, vehicle:getAxisForward())
 			end
@@ -861,7 +861,7 @@ function realismAddon_gearbox_overrides.updateWheelsPhysics(self, superFunc, dt,
 		motor.lastAcceleratorPedal = motor.lastAcceleratorPedalME												  
 							
 
-		SpecializationUtil.raiseEvent(self, "onVehiclePhysicsUpdate", acceleratorPedal, brakePedal, automaticBrake, currentSpeed)
+		SpecializationUtil.raiseEvent(self, "onVehiclePhysicsUpdate", acceleratorPedal, brakePedal, false, currentSpeed) -- no automatic brake with this mod
 
 
 		--acceleratorPedal, brakePedal = WheelsUtil.getSmoothedAcceleratorAndBrakePedals(self, acceleratorPedal, brakePedal, dt)		
@@ -928,15 +928,35 @@ local modName = g_currentModName
 function realismAddon_gearbox_overrides.load(self, superFunc, vehicleData, a, b, c, d, e)
 	
 	-- call superFunc first actually because vehicleData is only complete afterwards
-	superFunc(self, vehicleData, a, b, c, d, e)
-	
+	local loadingState = superFunc(self, vehicleData, a, b, c, d, e)
+
+	if self.xmlFile ~= nil and self.xmlFile.handle ~= nil and vehicleData ~= nil and vehicleData.storeItem ~= nil and vehicleData.storeItem.xmlFilename ~= nil then
+		realismAddon_gearbox_overrides.applyXmlEdits(self, vehicleData.storeItem.xmlFilename)
+	end
+
+	return loadingState
+end
+
+function realismAddon_gearbox_overrides.applyXmlEdits(self, vehicleXmlFilename)
+
 	-- set up the XML files 
-	local vehicleXML = self.xmlFile
 	local xmlFile = loadXMLFile("xmlEdits", modDirectory.."xmlEdits.xml")
-	
-	-- get modName (so this also works with Mods or DLC's)
-	local modName, baseDirectory = Utils.getModNameAndBaseDirectory(vehicleData.storeItem.xmlFilename)
-	local name = string.split(vehicleData.storeItem.xmlFilename, "FarmingSimulator2025/")
+	if xmlFile == nil then
+		return
+	end
+
+	-- base game vehicles have a relative path ("data/vehicles/..."), mods and DLCs an absolute one that depends on the
+	-- install location (Steam, Giants installer, dedicated server) and may use backslashes on Windows.
+	-- So we compare case insensitive and accept a match at the end of the path.
+	local vehiclePath = string.lower(string.gsub(vehicleXmlFilename, "\\", "/"))
+	local function matches(nameToEdit)
+		local n = string.lower(string.gsub(nameToEdit, "\\", "/"))
+		if n == vehiclePath then
+			return true
+		end
+		local len = string.len(n)
+		return string.len(vehiclePath) > len and string.sub(vehiclePath, -len - 1) == "/" .. n
+	end
 	
 	local i = 0
 	while true do
@@ -947,7 +967,7 @@ function realismAddon_gearbox_overrides.load(self, superFunc, vehicleData, a, b,
 			break
 		end
 						
-		if nameToEdit == name[2] or nameToEdit == vehicleData.storeItem.xmlFilename then
+		if matches(nameToEdit) then
 				
 			-- if it matches run through all XML paths and change the values 
 			local x = 0
@@ -969,6 +989,8 @@ function realismAddon_gearbox_overrides.load(self, superFunc, vehicleData, a, b,
 		
 		i = i + 1
 	end
+
+	delete(xmlFile)
 	
 end
 Vehicle.load = Utils.overwrittenFunction(Vehicle.load, realismAddon_gearbox_overrides.load)
