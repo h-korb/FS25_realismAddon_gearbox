@@ -33,6 +33,7 @@ end
 function realismAddon_gearbox_spec_bigh.registerEventListeners(vehicleType)
 	SpecializationUtil.registerEventListener(vehicleType, "onLoad", realismAddon_gearbox_spec_bigh)
 	SpecializationUtil.registerEventListener(vehicleType, "onPostLoad", realismAddon_gearbox_spec_bigh)
+	SpecializationUtil.registerEventListener(vehicleType, "onUpdate", realismAddon_gearbox_spec_bigh)
 	SpecializationUtil.registerEventListener(vehicleType, "onReadStream", realismAddon_gearbox_spec_bigh)
 	SpecializationUtil.registerEventListener(vehicleType, "onWriteStream", realismAddon_gearbox_spec_bigh)
 	SpecializationUtil.registerEventListener(vehicleType, "onDraw", realismAddon_gearbox_spec_bigh)
@@ -47,6 +48,11 @@ function realismAddon_gearbox_spec_bigh.registerFunctions(vehicleType)
 	SpecializationUtil.registerFunction(vehicleType, "bighGetShiftPolicy", realismAddon_gearbox_spec_bigh.bighGetShiftPolicy)
 	SpecializationUtil.registerFunction(vehicleType, "bighSetShiftPolicy", realismAddon_gearbox_spec_bigh.bighSetShiftPolicy)
 	SpecializationUtil.registerFunction(vehicleType, "bighApplyShiftPolicy", realismAddon_gearbox_spec_bigh.bighApplyShiftPolicy)
+	SpecializationUtil.registerFunction(vehicleType, "bighOnEngineStalled", realismAddon_gearbox_spec_bigh.bighOnEngineStalled)
+end
+
+function realismAddon_gearbox_spec_bigh.registerOverwrittenFunctions(vehicleType)
+	SpecializationUtil.registerOverwrittenFunction(vehicleType, "getCanMotorRun", realismAddon_gearbox_spec_bigh.getCanMotorRun)
 end
 
 function realismAddon_gearbox_spec_bigh:onLoad(savegame)
@@ -57,6 +63,8 @@ function realismAddon_gearbox_spec_bigh:onLoad(savegame)
 	-- last gear shift mode the controlling player's game setting put on this vehicle, restored when the policy goes back to 0
 	spec.playerGearShiftMode = nil
 	spec.hudVisibleUntil = 0
+	-- set after the engine stalled (server only): blocks the automatic motor start until the clutch is pressed or neutral is selected
+	spec.stallRestartBlocked = false
 
 	-- savegame value, server only. Clients receive it via onReadStream.
 	-- same raw access as the other specs of this mod (key = vehicles.vehicle(x).<modName>.realismAddon_gearbox_spec_bigh)
@@ -71,6 +79,43 @@ end
 function realismAddon_gearbox_spec_bigh:onPostLoad(savegame)
 	-- motor is fully set up now
 	self:bighApplyShiftPolicy()
+end
+
+-- the engine was stalled by the Big-H stall logic (overrides.lua, server only).
+-- GIANTS' "automatic motor start" would restart the engine in the very next tick, so we block the start
+-- until the driver presses the clutch or shifts to neutral, like the neutral safety switch of a real tractor.
+function realismAddon_gearbox_spec_bigh:bighOnEngineStalled()
+	local spec = self.spec_realismAddon_gearbox_bigh
+	if spec ~= nil and self.isServer then
+		spec.stallRestartBlocked = true
+	end
+end
+
+-- asked by Motorized before the automatic motor start
+function realismAddon_gearbox_spec_bigh:getCanMotorRun(superFunc)
+	local spec = self.spec_realismAddon_gearbox_bigh
+	if spec ~= nil and spec.stallRestartBlocked then
+		return false
+	end
+	return superFunc(self)
+end
+
+function realismAddon_gearbox_spec_bigh:onUpdate(dt)
+	local spec = self.spec_realismAddon_gearbox_bigh
+	if spec == nil or not spec.stallRestartBlocked then
+		return
+	end
+
+	local motor = self.spec_motorized ~= nil and self.spec_motorized.motor or nil
+	if motor == nil then
+		spec.stallRestartBlocked = false
+		return
+	end
+
+	-- release the block as soon as the clutch is pressed, neutral is selected or the engine is running again anyway
+	if motor.manualClutchValue > 0.1 or motor:getIsInNeutral() or self:getIsMotorStarted() then
+		spec.stallRestartBlocked = false
+	end
 end
 
 -- called by Vehicle:saveToXMLFile for every specialization

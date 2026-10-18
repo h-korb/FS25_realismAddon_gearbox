@@ -482,6 +482,9 @@ function realismAddon_gearbox_overrides.update(self, superFunc, dt)
 
 					if bighStalled then
 						vehicle:stopMotor()
+						if vehicle.bighOnEngineStalled ~= nil then
+							vehicle:bighOnEngineStalled() -- blocks the automatic restart until clutch / neutral
+						end
 						clampedMotorRpm = self.minRpm
 						self.lastRealMotorRpm = self.minRpm
 						self.bighRunningTime = 0
