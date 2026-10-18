@@ -19,7 +19,7 @@ realismAddon_gearbox_spec_bigh.POLICY_MANUAL = 2
 realismAddon_gearbox_spec_bigh.POLICY_MANUAL_CLUTCH = 3
 realismAddon_gearbox_spec_bigh.POLICY_MAX = 3
 
-realismAddon_gearbox_spec_bigh.HUD_DURATION = 3000
+realismAddon_gearbox_spec_bigh.HUD_DURATION = 5000 -- ms the profile text stays on screen after entering or switching
 
 local function clampPolicy(policy)
 	policy = tonumber(policy) or realismAddon_gearbox_spec_bigh.POLICY_PLAYER
@@ -237,7 +237,8 @@ end
 
 function realismAddon_gearbox_spec_bigh:onEnterVehicle(isControlling)
 	local spec = self.spec_realismAddon_gearbox_bigh
-	if spec ~= nil and self.isClient and isControlling and spec.shiftPolicy ~= realismAddon_gearbox_spec_bigh.POLICY_PLAYER then
+	-- show the current profile for a few seconds whenever the player takes control, also for "player setting"
+	if spec ~= nil and self.isClient and isControlling then
 		spec.hudVisibleUntil = g_time + realismAddon_gearbox_spec_bigh.HUD_DURATION
 	end
 end
