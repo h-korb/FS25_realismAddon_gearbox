@@ -112,8 +112,11 @@ function realismAddon_gearbox_spec_bigh:onUpdate(dt)
 		return
 	end
 
-	-- release the block as soon as the clutch is pressed, neutral is selected or the engine is running again anyway
-	if motor.manualClutchValue > 0.1 or motor:getIsInNeutral() or self:getIsMotorStarted() then
+	-- release the block as soon as the clutch is pressed, neutral is selected, the engine is starting/running again anyway
+	-- or the vehicle is no longer on a policy that can stall at all
+	local motorRunning = self.getMotorState ~= nil and MotorState ~= nil and self:getMotorState() ~= MotorState.OFF
+	local policyCanStall = spec.shiftPolicy == realismAddon_gearbox_spec_bigh.POLICY_MANUAL or spec.shiftPolicy == realismAddon_gearbox_spec_bigh.POLICY_MANUAL_CLUTCH
+	if motor.manualClutchValue > 0.1 or motor:getIsInNeutral() or motorRunning or not policyCanStall then
 		spec.stallRestartBlocked = false
 	end
 end
@@ -188,6 +191,11 @@ function realismAddon_gearbox_spec_bigh:bighApplyShiftPolicy()
 	local policy = spec.shiftPolicy
 	local wantedMode = nil
 
+	-- a stall block only makes sense while the vehicle can stall (policy 2/3), never keep the engine off in automatic / player setting
+	if policy ~= realismAddon_gearbox_spec_bigh.POLICY_MANUAL and policy ~= realismAddon_gearbox_spec_bigh.POLICY_MANUAL_CLUTCH then
+		spec.stallRestartBlocked = false
+	end
+
 	if policy == realismAddon_gearbox_spec_bigh.POLICY_AUTO then
 		wantedMode = VehicleMotor.SHIFT_MODE_AUTOMATIC
 	elseif policy == realismAddon_gearbox_spec_bigh.POLICY_MANUAL then
@@ -247,6 +255,8 @@ function realismAddon_gearbox_spec_bigh:onLeaveVehicle(wasEntered)
 	local spec = self.spec_realismAddon_gearbox_bigh
 	if spec ~= nil then
 		spec.hudVisibleUntil = 0
+		-- don't carry a stall block over to the next driver
+		spec.stallRestartBlocked = false
 	end
 end
 
