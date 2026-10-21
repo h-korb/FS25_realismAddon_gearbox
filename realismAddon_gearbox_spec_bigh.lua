@@ -63,6 +63,7 @@ function realismAddon_gearbox_spec_bigh:onLoad(savegame)
 	-- last gear shift mode the controlling player's game setting put on this vehicle, restored when the policy goes back to 0
 	spec.playerGearShiftMode = nil
 	spec.hudVisibleUntil = 0
+	spec.hudOverrideText = nil -- shown instead of the profile text, e.g. "not possible without gears"
 	-- set after the engine stalled (server only): blocks the automatic motor start until the clutch is pressed or neutral is selected
 	spec.stallRestartBlocked = false
 
@@ -162,6 +163,17 @@ function realismAddon_gearbox_spec_bigh:bighSetShiftPolicy(policy, noEventSend)
 	end
 	policy = clampPolicy(policy)
 
+	-- a driver's request (not an incoming event): manual profiles need a gearbox with gears.
+	-- CVT / vario vehicles without gear sets are always automatic for GIANTS, so tell the driver instead of pretending
+	if not noEventSend and not realismAddon_gearbox_spec_bigh.getHasGears(self) and policy ~= realismAddon_gearbox_spec_bigh.POLICY_PLAYER and policy ~= realismAddon_gearbox_spec_bigh.POLICY_AUTO then
+		if self.isClient then
+			spec.hudOverrideText = realismAddon_gearbox_spec_bigh.getText("RAGB_BIGH_POLICY_NO_GEARS", "Transmission profile: not possible, no gears")
+			spec.hudVisibleUntil = g_time + realismAddon_gearbox_spec_bigh.HUD_DURATION
+		end
+		return
+	end
+	spec.hudOverrideText = nil
+
 	RAGB_BigH_ShiftPolicyEvent.sendEvent(self, policy, noEventSend)
 
 	if spec.shiftPolicy ~= policy then
@@ -207,9 +219,11 @@ function realismAddon_gearbox_spec_bigh:bighApplyShiftPolicy()
 		wantedMode = spec.playerGearShiftMode or specMotorized.gearShiftMode
 	end
 
-	-- vehicles without gears (CVT, cars) can only be automatic
-	local hasGears = motor.forwardGears ~= nil or motor.backwardGears ~= nil
-	if not hasGears and wantedMode ~= nil and wantedMode ~= VehicleMotor.SHIFT_MODE_AUTOMATIC and policy ~= realismAddon_gearbox_spec_bigh.POLICY_PLAYER then
+	-- vehicles without gears (CVT, cars) can only be automatic. A manual policy on such a vehicle (e.g. from an old savegame)
+	-- is corrected to automatic so the HUD never claims "manual" on a vehicle that cannot be manual
+	if not realismAddon_gearbox_spec_bigh.getHasGears(self) and (policy == realismAddon_gearbox_spec_bigh.POLICY_MANUAL or policy == realismAddon_gearbox_spec_bigh.POLICY_MANUAL_CLUTCH) then
+		spec.shiftPolicy = realismAddon_gearbox_spec_bigh.POLICY_AUTO
+		policy = spec.shiftPolicy
 		wantedMode = VehicleMotor.SHIFT_MODE_AUTOMATIC
 	end
 
@@ -247,6 +261,7 @@ function realismAddon_gearbox_spec_bigh:onEnterVehicle(isControlling)
 	local spec = self.spec_realismAddon_gearbox_bigh
 	-- show the current profile for a few seconds whenever the player takes control, also for "player setting"
 	if spec ~= nil and self.isClient and isControlling then
+		spec.hudOverrideText = nil
 		spec.hudVisibleUntil = g_time + realismAddon_gearbox_spec_bigh.HUD_DURATION
 	end
 end
@@ -260,12 +275,21 @@ function realismAddon_gearbox_spec_bigh:onLeaveVehicle(wasEntered)
 	end
 end
 
-function realismAddon_gearbox_spec_bigh.getPolicyText(policy)
-	local text = g_i18n:getText("RAGB_BIGH_POLICY_" .. tostring(clampPolicy(policy)))
+function realismAddon_gearbox_spec_bigh.getHasGears(vehicle)
+	local motor = vehicle.spec_motorized ~= nil and vehicle.spec_motorized.motor or nil
+	return motor ~= nil and (motor.forwardGears ~= nil or motor.backwardGears ~= nil)
+end
+
+function realismAddon_gearbox_spec_bigh.getText(name, fallback)
+	local text = g_i18n:getText(name)
 	if text == nil or text == "" then
-		text = "Policy " .. tostring(policy)
+		text = fallback
 	end
 	return text
+end
+
+function realismAddon_gearbox_spec_bigh.getPolicyText(policy)
+	return realismAddon_gearbox_spec_bigh.getText("RAGB_BIGH_POLICY_" .. tostring(clampPolicy(policy)), "Policy " .. tostring(policy))
 end
 
 function realismAddon_gearbox_spec_bigh:onDraw(isActiveForInput, isActiveForInputIgnoreSelection, isSelected)
@@ -277,7 +301,7 @@ function realismAddon_gearbox_spec_bigh:onDraw(isActiveForInput, isActiveForInpu
 	setTextAlignment(RenderText.ALIGN_CENTER)
 	setTextBold(true)
 	setTextColor(130/255, 171/255, 13/255, 1)
-	renderText(0.5, 0.95, 0.018, realismAddon_gearbox_spec_bigh.getPolicyText(spec.shiftPolicy))
+	renderText(0.5, 0.95, 0.018, spec.hudOverrideText or realismAddon_gearbox_spec_bigh.getPolicyText(spec.shiftPolicy))
 	setTextColor(1, 1, 1, 1)
 	setTextBold(false)
 	setTextAlignment(RenderText.ALIGN_LEFT)

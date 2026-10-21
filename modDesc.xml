@@ -222,6 +222,7 @@ V 0.5.1.0
 		<text name="RAGB_BIGH_POLICY_1"><de>Getriebeprofil: Automatik</de><en>Transmission profile: automatic</en></text>
 		<text name="RAGB_BIGH_POLICY_2"><de>Getriebeprofil: Manuell ohne Kupplung</de><en>Transmission profile: manual without clutch</en></text>
 		<text name="RAGB_BIGH_POLICY_3"><de>Getriebeprofil: Manuell mit Kupplung</de><en>Transmission profile: manual with clutch</en></text>
+		<text name="RAGB_BIGH_POLICY_NO_GEARS"><de>Getriebeprofil: nicht möglich, Getriebe ohne Gänge (stufenlos)</de><en>Transmission profile: not possible, transmission without gears (CVT)</en></text>
 	</l10n>
 	
 	<inputBinding>
