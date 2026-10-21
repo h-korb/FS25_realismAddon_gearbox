@@ -472,11 +472,24 @@ function realismAddon_gearbox_overrides.update(self, superFunc, dt)
 				if (self.bighRunningTime or 0) > 1500 then
 					local speedKmh = vehicle:getLastSpeed() -- already km/h
 					local throttle = self.lastAcceleratorPedal or 0
-					-- stopped in gear with the clutch closed -> stall
+
+					-- a real engine lugs for a moment before it dies. The conditions therefore have to persist for a short time,
+					-- a single frame is not enough: e.g. when the clutch closes at standstill under pto load the idle regulation
+					-- needs a moment to get the vehicle rolling. Giants uses a 500ms timer for its own stalling as well.
+					-- stopped in gear with the clutch closed -> stall after 800ms
 					if clutchRpm <= 0.1 and speedKmh < 0.5 then
-						bighStalled = true
-					-- dragged far below idle while the driver asks for power -> stall
-					elseif clutchRpm > 0.1 and clutchRpm < (self.minRpm * 0.6) and throttle > 0.2 then
+						self.bighStopStallTime = (self.bighStopStallTime or 0) + dt
+					else
+						self.bighStopStallTime = 0
+					end
+					-- dragged far below idle while the driver asks for power -> stall after 500ms
+					if clutchRpm > 0.1 and clutchRpm < (self.minRpm * 0.6) and throttle > 0.2 then
+						self.bighLugStallTime = (self.bighLugStallTime or 0) + dt
+					else
+						self.bighLugStallTime = 0
+					end
+
+					if self.bighStopStallTime > 800 or self.bighLugStallTime > 500 then
 						bighStalled = true
 					end
 
@@ -488,10 +501,17 @@ function realismAddon_gearbox_overrides.update(self, superFunc, dt)
 						clampedMotorRpm = self.minRpm
 						self.lastRealMotorRpm = self.minRpm
 						self.bighRunningTime = 0
+						self.bighStopStallTime = 0
+						self.bighLugStallTime = 0
 					end
+				else
+					self.bighStopStallTime = 0
+					self.bighLugStallTime = 0
 				end
 			else
 				self.bighRunningTime = 0
+				self.bighStopStallTime = 0
+				self.bighLugStallTime = 0
 			end
 
 			-- this doesn't work like that in FS22, so disable for now. Set clampedMotorRpm to minRpm if vehicle is stopped anyways ß
