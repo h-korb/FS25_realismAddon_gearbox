@@ -298,6 +298,13 @@ function realismAddon_gearbox_inputs:onUpdate(dt)
 		local allManualActive = realismAddon_gearbox_overrides.checkIsManual(self.spec_motorized.motor)
 		if allManualActive ~= spec.allManualActive then
 			spec.allManualActive = allManualActive
+
+			-- our action events (hand throttle, handbrake, ...) depend on this flag, so they must be registered again.
+			-- Vehicle:update processes action event updates before onUpdate, so the registration triggered by GIANTS
+			-- on enter / setting change still saw the old value of this flag.
+			if self.isClient and self.requestActionEventUpdate ~= nil then
+				self:requestActionEventUpdate()
+			end
 		end
 		
 		
